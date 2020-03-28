@@ -9,7 +9,7 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       appBar:  AppBar(
-        title: Center(child: Text('Home Page')),
+        title: Text('Home Page'),
       ),
       body: Container(),
       floatingActionButton: this._createButton(context),

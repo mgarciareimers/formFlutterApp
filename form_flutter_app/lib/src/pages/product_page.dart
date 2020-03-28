@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:formflutterapp/src/commons/utils.dart' as utils;
+import 'package:formflutterapp/src/models/product_model.dart';
 
 class ProductPage extends StatefulWidget {
   @override
@@ -9,6 +10,7 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage> {
   final formKey = GlobalKey<FormState>();
+  ProductModel product = new ProductModel();
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,7 @@ class _ProductPageState extends State<ProductPage> {
               children: <Widget>[
                 this._createName(),
                 this._createPrice(),
+                this._createAvailable(),
                 SizedBox(height: 20),
                 this._createSubmitButton(),
               ],
@@ -41,21 +44,35 @@ class _ProductPageState extends State<ProductPage> {
 
   Widget _createName() {
     return TextFormField(
+      initialValue: this.product.title,
       textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration(
         labelText: 'Product',
       ),
-      validator: (value) => value.length >= 3 ? null : 'Product name is invalid (min 3 characters)'
+      validator: (value) => value.length >= 3 ? null : 'Product name is invalid (min 3 characters)',
+      onSaved: (value) => this.product.title = value,
     );
   }
 
   Widget _createPrice() {
     return TextFormField(
+      initialValue: this.product.value.toString(),
       keyboardType: TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
         labelText: 'Price',
       ),
-      validator: (value) => utils.isNumber(value) ? null : 'Price has to be a number'
+      validator: (value) => utils.isNumber(value) ? null : 'Price has to be a number',
+      onSaved: (value) => this.product.value = double.parse(value),
+    );
+  }
+
+  // Method that creates the availability switch;
+  Widget _createAvailable() {
+    return SwitchListTile(
+      value: this.product.available,
+      title: Text('Available'),
+      onChanged: (bool value) => setState(() => this.product.available = value),
+      activeColor: Colors.deepPurple,
     );
   }
 
@@ -79,6 +96,11 @@ class _ProductPageState extends State<ProductPage> {
       return;
     }
 
+    this.formKey.currentState.save(); // Fires the onSaved() event of the Widgets.
+
     print('Submitting...');
+    print('Title: ${ this.product.title }');
+    print('Value: ${ this.product.value }');
+    print('Available: ${ this.product.available }');
   }
 }

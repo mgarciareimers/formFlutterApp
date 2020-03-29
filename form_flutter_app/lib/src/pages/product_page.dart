@@ -16,6 +16,8 @@ class _ProductPageState extends State<ProductPage> {
 
   @override
   Widget build(BuildContext context) {
+    this._loadData(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Product'),
@@ -44,6 +46,16 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
+  // Method that loads the data.
+  void _loadData(BuildContext context) {
+    final ProductModel productData = ModalRoute.of(context).settings.arguments;
+
+    if (productData != null) {
+      this.product = productData;
+    }
+  }
+  
+  // Method that creates the name form input.
   Widget _createName() {
     return TextFormField(
       initialValue: this.product.title,
@@ -55,7 +67,8 @@ class _ProductPageState extends State<ProductPage> {
       onSaved: (value) => this.product.title = value,
     );
   }
-
+  
+  // Method that creates the price form input.
   Widget _createPrice() {
     return TextFormField(
       initialValue: this.product.value.toString(),
@@ -78,6 +91,7 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
+  // Method that creates the submit button.
   Widget _createSubmitButton() {
     return RaisedButton.icon(
       shape: RoundedRectangleBorder(
@@ -93,6 +107,7 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
+  // Method that is called when the user clicks the submit button.
   void _submit() {
     if (!this.formKey.currentState.validate()) {
       return;
@@ -100,11 +115,6 @@ class _ProductPageState extends State<ProductPage> {
 
     this.formKey.currentState.save(); // Fires the onSaved() event of the Widgets.
 
-    print('Submitting...');
-    print('Title: ${ this.product.title }');
-    print('Value: ${ this.product.value }');
-    print('Available: ${ this.product.available }');
-
-    this.productProvider.createProduct(this.product);
+    this.product.id == null ? this.productProvider.createProduct(this.product) : this.productProvider.editProduct(this.product);
   }
 }

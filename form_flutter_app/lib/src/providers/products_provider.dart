@@ -41,4 +41,26 @@ class ProductsProvider {
 
     return products;
   }
+
+  // Method that deletes a product from the database.
+  Future<bool> deleteProduct(String id) async {
+    final url = '${this._url}/products/$id.json';
+
+    final response = await http.delete(url);
+
+    return true;
+  }
+
+  // Method that updates a product from the database.
+  Future<bool> editProduct(ProductModel product) async {
+    final url = '${this._url}/products/${product.id}.json';
+
+    final response = await http.put(url, body: productModelToJson(product));
+
+    final decodedData = json.decode(response.body);
+
+    print(decodedData);
+
+    return true;
+  }
 }

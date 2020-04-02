@@ -47,12 +47,24 @@ class HomePage extends StatelessWidget {
           color: Colors.red,
         ),
         onDismissed: (direction) => this.productsProvider.deleteProduct(product.id),
-        child: ListTile(
-          title: Text('${product.title} - ${product.value}'),
-          subtitle: Text(product.id),
-          onTap: () => Navigator.pushNamed(context, 'product', arguments: product),
-      ),
-
+        child: Card(
+          child: Column(
+            children: <Widget>[
+              GestureDetector(
+               child: (product.pictureUrl == null ?
+                  Image(image: AssetImage('assets/no-image.png')) :
+                  FadeInImage(image: NetworkImage(product.pictureUrl), placeholder: AssetImage('assets/jar-loading.gif'), height: 300, width: double.infinity, fit: BoxFit.cover)
+                ),
+                onTap: () => Navigator.pushNamed(context, 'product', arguments: product),
+              ),
+              ListTile(
+                title: Text('${product.title} - ${product.value}'),
+                subtitle: Text(product.id),
+                onTap: () => Navigator.pushNamed(context, 'product', arguments: product),
+              ),
+            ],
+          ),
+        ),
     );
   }
 

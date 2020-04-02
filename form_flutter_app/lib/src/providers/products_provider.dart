@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:mime_type/mime_type.dart';
 
 import 'package:formflutterapp/src/models/product_model.dart';
 
@@ -62,5 +65,26 @@ class ProductsProvider {
     print(decodedData);
 
     return true;
+  }
+  
+  // Method that uploads an image.
+  Future<String> uploadImage(File picture) async {
+    final url = Uri.parse("http://api.cloudinary.com/v1_1/dptixz77g/image/upload?upload_preset=ktw1tt8t");
+    final mimeType = mime(picture.path).split('/');
+
+    final uploadRequest = http.MultipartRequest('POST', url,);
+    final file = await http.MultipartFile.fromPath('file', picture.path, contentType: MediaType(mimeType[0], mimeType[1]));
+    uploadRequest.files.add(file);
+
+    final streamResponse = await uploadRequest.send();
+    final response = await http.Response.fromStream(streamResponse);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      return null;
+    }
+
+    final decodedData = json.decode(response.body);
+
+    return decodedData['secure_url'];
   }
 }

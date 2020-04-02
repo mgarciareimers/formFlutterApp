@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:formflutterapp/src/commons/utils.dart' as utils;
 import 'package:formflutterapp/src/models/product_model.dart';
@@ -11,19 +13,25 @@ class ProductPage extends StatefulWidget {
 
 class _ProductPageState extends State<ProductPage> {
   final formKey = GlobalKey<FormState>();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
   ProductModel product = new ProductModel();
   final productProvider = new ProductsProvider();
+
+  bool _isSaving = false;
+  File picture = null;
 
   @override
   Widget build(BuildContext context) {
     this._loadData(context);
 
     return Scaffold(
+      key: this.scaffoldKey,
       appBar: AppBar(
         title: Text('Product'),
         actions: <Widget>[
-          IconButton(icon: Icon(Icons.photo_size_select_actual), onPressed: (){}),
-          IconButton(icon: Icon(Icons.camera_alt), onPressed: (){}),
+          IconButton(icon: Icon(Icons.photo_size_select_actual), onPressed: () => this._processImage(ImageSource.gallery)),
+          IconButton(icon: Icon(Icons.camera_alt), onPressed: () => this._processImage(ImageSource.camera)),
         ],
       ),
       body: SingleChildScrollView(
@@ -33,6 +41,7 @@ class _ProductPageState extends State<ProductPage> {
             key: this.formKey,
             child: Column(
               children: <Widget>[
+                this._createPicture(),
                 this._createName(),
                 this._createPrice(),
                 this._createAvailable(),
@@ -52,6 +61,25 @@ class _ProductPageState extends State<ProductPage> {
 
     if (productData != null) {
       this.product = productData;
+    }
+  }
+
+  // Method that shows the picture.
+  Widget _createPicture() {
+    print('Picture: ${picture?.path}');
+    if (product.pictureUrl != null) {
+      return FadeInImage(
+        image: NetworkImage(product.pictureUrl),
+        placeholder: AssetImage('assets/jar-loading.gif'),
+        height: 300,
+        fit: BoxFit.cover
+      );
+    } else {
+      return Image(
+        image: AssetImage(picture?.path ?? 'assets/no-image.png'),
+        height: 300,
+        fit: BoxFit.cover,
+      );
     }
   }
   
@@ -101,20 +129,49 @@ class _ProductPageState extends State<ProductPage> {
       icon: Icon(Icons.save),
       color: Colors.deepPurple,
       textColor: Colors.white,
-      onPressed: () {
-        this._submit();
-      },
+      disabledTextColor: Colors.white,
+      onPressed: this._isSaving ? null : () => this._submit(),
     );
   }
 
   // Method that is called when the user clicks the submit button.
-  void _submit() {
+  void _submit() async {
     if (!this.formKey.currentState.validate()) {
       return;
     }
 
     this.formKey.currentState.save(); // Fires the onSaved() event of the Widgets.
 
+    this.setState(() => _isSaving = true);
+    
+    if (picture != null) {
+      this.product.pictureUrl = await this.productProvider.uploadImage(picture);
+    }
+
     this.product.id == null ? this.productProvider.createProduct(this.product) : this.productProvider.editProduct(this.product);
+
+    this._showSnackbar('Product has been saved!');
+    
+    Navigator.pop(context);
+  }
+
+  // Method that shows a snackbar.
+  void _showSnackbar(String message) {
+    this.scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(message), duration: Duration(milliseconds: 1500)));
+  }
+
+  // Method that is called when the user clicks the picture/camera button.
+  _processImage(ImageSource source) async {
+    try {
+      picture = await ImagePicker.pickImage(source: source);
+
+      if (picture != null) {
+        this.product.pictureUrl = null;
+      }
+
+      this.setState(() {});
+    } catch(e) {
+      print('Exception $e}');
+    }
   }
 }

@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:formflutterapp/src/blocs/provider.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:formflutterapp/src/blocs/products_bloc.dart';
 import 'package:formflutterapp/src/commons/utils.dart' as utils;
 import 'package:formflutterapp/src/models/product_model.dart';
-import 'package:formflutterapp/src/providers/products_provider.dart';
 
 class ProductPage extends StatefulWidget {
   @override
@@ -15,14 +16,15 @@ class _ProductPageState extends State<ProductPage> {
   final formKey = GlobalKey<FormState>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  ProductsBloc productsBloc = new ProductsBloc();
   ProductModel product = new ProductModel();
-  final productProvider = new ProductsProvider();
 
   bool _isSaving = false;
-  File picture = null;
+  File picture;
 
   @override
   Widget build(BuildContext context) {
+    this.productsBloc = Provider.productsBloc(context);
     this._loadData(context);
 
     return Scaffold(
@@ -30,8 +32,8 @@ class _ProductPageState extends State<ProductPage> {
       appBar: AppBar(
         title: Text('Product'),
         actions: <Widget>[
-          IconButton(icon: Icon(Icons.photo_size_select_actual), onPressed: () => this._processImage(ImageSource.gallery)),
-          IconButton(icon: Icon(Icons.camera_alt), onPressed: () => this._processImage(ImageSource.camera)),
+          IconButton(icon: Icon(Icons.photo_size_select_actual), onPressed: () => this._processImage(context, ImageSource.gallery)),
+          IconButton(icon: Icon(Icons.camera_alt), onPressed: () => this._processImage(context, ImageSource.camera)),
         ],
       ),
       body: SingleChildScrollView(
@@ -66,7 +68,6 @@ class _ProductPageState extends State<ProductPage> {
 
   // Method that shows the picture.
   Widget _createPicture() {
-    print('Picture: ${picture?.path}');
     if (product.pictureUrl != null) {
       return FadeInImage(
         image: NetworkImage(product.pictureUrl),
@@ -145,10 +146,10 @@ class _ProductPageState extends State<ProductPage> {
     this.setState(() => _isSaving = true);
     
     if (picture != null) {
-      this.product.pictureUrl = await this.productProvider.uploadImage(picture);
+      this.product.pictureUrl = await this.productsBloc.uploadImage(picture);
     }
 
-    this.product.id == null ? this.productProvider.createProduct(this.product) : this.productProvider.editProduct(this.product);
+    this.product.id == null ? this.productsBloc.createProduct(this.product) : this.productsBloc.editProduct(this.product);
 
     this._showSnackbar('Product has been saved!');
     
@@ -161,7 +162,7 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   // Method that is called when the user clicks the picture/camera button.
-  _processImage(ImageSource source) async {
+  _processImage(BuildContext context, ImageSource source) async {
     try {
       picture = await ImagePicker.pickImage(source: source);
 
@@ -171,7 +172,7 @@ class _ProductPageState extends State<ProductPage> {
 
       this.setState(() {});
     } catch(e) {
-      print('Exception $e}');
+      utils.showAlert(context, 'Error Processing image', e);
     }
   }
 }

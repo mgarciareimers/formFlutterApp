@@ -4,34 +4,34 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:mime_type/mime_type.dart';
 
+import 'package:formflutterapp/src/preferences/preferences.dart';
 import 'package:formflutterapp/src/models/product_model.dart';
 
 class ProductsProvider {
   final String _url = 'https://flutter-form-project.firebaseio.com';
+  final _preferences = new Preferences();
 
   // Method that creates a product in the database.
   Future<bool> createProduct(ProductModel product) async {
-    final url = '${this._url}/products.json';
+    final url = '${this._url}/products.json?auth=${ this._preferences.token }';
 
     final response = await http.post(url, body: productModelToJson(product));
 
     final decodedData = json.decode(response.body);
-
-    print(decodedData);
 
     return true;
   }
 
   // Method that gets the list of products.
   Future<List<ProductModel>> getProducts() async {
-    final url = '${this._url}/products.json';
+    final url = '${this._url}/products.json?auth=${ this._preferences.token }';
 
     final response = await http.get(url);
 
     final Map<String, dynamic> decodedData = json.decode(response.body);
     final List<ProductModel> products = new List();
 
-    if (decodedData == null) {
+    if (decodedData == null || decodedData['error'] != null) {
       return [];
     }
 
@@ -47,7 +47,7 @@ class ProductsProvider {
 
   // Method that deletes a product from the database.
   Future<bool> deleteProduct(String id) async {
-    final url = '${this._url}/products/$id.json';
+    final url = '${this._url}/products/$id.json?auth=${ this._preferences.token }';
 
     final response = await http.delete(url);
 
@@ -56,13 +56,11 @@ class ProductsProvider {
 
   // Method that updates a product from the database.
   Future<bool> editProduct(ProductModel product) async {
-    final url = '${this._url}/products/${product.id}.json';
+    final url = '${this._url}/products/${product.id}.json?auth=${ this._preferences.token }';
 
     final response = await http.put(url, body: productModelToJson(product));
 
     final decodedData = json.decode(response.body);
-
-    print(decodedData);
 
     return true;
   }

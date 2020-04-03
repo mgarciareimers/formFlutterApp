@@ -4,10 +4,10 @@ import 'package:formflutterapp/src/blocs/provider.dart';
 import 'package:formflutterapp/src/commons/utils.dart';
 import 'package:formflutterapp/src/providers/users_provider.dart';
 
-class LoginPage extends StatelessWidget {
-
+class SignUpPage extends StatelessWidget {
+  
   final usersProvider = new UsersProvider();
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,19 +90,19 @@ class LoginPage extends StatelessWidget {
             padding: EdgeInsets.symmetric(vertical: 40),
             child: Column(
               children: <Widget>[
-                Text('Login', style: TextStyle(fontSize: 18)),
+                Text('Sign Up', style: TextStyle(fontSize: 18)),
                 SizedBox(height: 20),
                 this._createEmail(bloc),
                 SizedBox(height: 20),
                 this._createPassword(bloc),
                 SizedBox(height: 20),
-                this._createLoginButton(bloc),
+                this._createSignUpButton(bloc),
               ],
             ),
           ),
           FlatButton(
-            child: Text('Create a new account'),
-            onPressed: () => Navigator.pushReplacementNamed(context, 'signup'),
+            child: Text('Do you have an account? Log in'),
+            onPressed: () => Navigator.pushReplacementNamed(context, 'login'),
           ),
           SizedBox(height: 80),
         ],
@@ -156,14 +156,14 @@ class LoginPage extends StatelessWidget {
   }
 
   // Method that creates the login button.
-  Widget _createLoginButton(LoginBloc bloc) {
+  Widget _createSignUpButton(LoginBloc bloc) {
     return StreamBuilder(
       stream: bloc.formIsValidStream,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         return RaisedButton(
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-            child: Text('Login'),
+            child: Text('Sign Up'),
           ),
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5)
@@ -172,19 +172,19 @@ class LoginPage extends StatelessWidget {
           color: Colors.deepPurple,
           textColor: Colors.white,
           disabledTextColor: Colors.white,
-          onPressed: !snapshot.hasData ? null : () => this._login(context, bloc),
+          onPressed: !snapshot.hasData ? null : () => this._signUp(context, bloc),
         );
       },
     );
   }
 
-  _login(BuildContext context, LoginBloc bloc) async {
-    Map response = await this.usersProvider.login(bloc.email, bloc.password);
+  _signUp(BuildContext context, LoginBloc bloc) async {
+    Map response = await this.usersProvider.newUser(bloc.email, bloc.password);
 
     if (response['ok']) {
-      Navigator.pushReplacementNamed(context, 'home');
+      Navigator.pushReplacementNamed(context, 'home', );
     } else {
-      showAlert(context, 'Login Error', response['message']);
+      showAlert(context, 'Sign Up Error', response['message']);
     }
   }
 }

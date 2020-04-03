@@ -2,35 +2,46 @@ import 'package:flutter/material.dart';
 
 import 'package:formflutterapp/src/blocs/provider.dart';
 import 'package:formflutterapp/src/models/product_model.dart';
-import 'package:formflutterapp/src/providers/products_provider.dart';
+import 'package:formflutterapp/src/preferences/preferences.dart';
 
 class HomePage extends StatelessWidget {
-  final productsProvider = new ProductsProvider();
+  final preferences = new Preferences();
 
   @override
   Widget build(BuildContext context) {
-    final bloc = Provider.of(context);
+
+    final productsBloc = Provider.productsBloc(context);
+    productsBloc.getProducts();
 
     return Scaffold(
       appBar:  AppBar(
         title: Text('Home Page'),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.exit_to_app), onPressed: () => this._logout(context)),
+        ],
       ),
-      body: this._createProductList(),
+      body: this._createProductList(productsBloc),
       floatingActionButton: this._createButton(context),
     );
   }
 
+  // Method that logs the user out.
+  _logout(BuildContext context) {
+    this.preferences.token = null;
+    Navigator.pushReplacementNamed(context, 'login');
+  }
+
   // Method that creates the product list.
-  Widget _createProductList() {
-    return FutureBuilder(
-      future: this.productsProvider.getProducts(),
+  Widget _createProductList(ProductsBloc productsBloc) {
+    return StreamBuilder(
+      stream: productsBloc.productsStream,
       builder: (BuildContext context, AsyncSnapshot<List<ProductModel>> snapshot) {
         if (snapshot.hasData) {
           final products = snapshot.data;
 
           return ListView.builder(
             itemCount: products.length,
-            itemBuilder: (context, index) => this._createListItem(context, products[index]),
+            itemBuilder: (context, index) => this._createListItem(context, productsBloc, products[index]),
           );
         }
 
@@ -40,13 +51,13 @@ class HomePage extends StatelessWidget {
   }
 
   // Method that creates the list item.
-  Widget _createListItem(BuildContext context, ProductModel product) {
+  Widget _createListItem(BuildContext context, ProductsBloc productsBloc, ProductModel product) {
     return Dismissible(
         key: UniqueKey(),
         background: Container(
           color: Colors.red,
         ),
-        onDismissed: (direction) => this.productsProvider.deleteProduct(product.id),
+        onDismissed: (direction) => productsBloc.deleteProduct(product.id),
         child: Card(
           child: Column(
             children: <Widget>[

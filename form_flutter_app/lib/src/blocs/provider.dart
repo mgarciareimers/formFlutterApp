@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:formflutterapp/src/blocs/login_bloc.dart';
+import 'package:formflutterapp/src/blocs/products_bloc.dart';
 export 'package:formflutterapp/src/blocs/login_bloc.dart';
+export 'package:formflutterapp/src/blocs/products_bloc.dart';
 
 class Provider extends InheritedWidget{
 
@@ -18,12 +20,17 @@ class Provider extends InheritedWidget{
 
   //Provider({ Key key, Widget child }) : super(key: key, child: child);
 
-  final LoginBloc loginBloc = LoginBloc();
+  final LoginBloc _loginBloc = LoginBloc();
+  final ProductsBloc _productsBloc = ProductsBloc();
 
   @override
   bool updateShouldNotify(InheritedWidget oldWidget) => true;
 
-  static LoginBloc of (BuildContext context) {
-    return (context.dependOnInheritedWidgetOfExactType<Provider>().loginBloc);
+  static LoginBloc loginBloc (BuildContext context) {
+    return (context.dependOnInheritedWidgetOfExactType<Provider>()._loginBloc);
+  }
+
+  static ProductsBloc productsBloc (BuildContext context) {
+    return (context.dependOnInheritedWidgetOfExactType<Provider>()._productsBloc);
   }
 }
